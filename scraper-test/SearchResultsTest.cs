@@ -8,7 +8,9 @@ public class SearchResultsTest
     [Fact]
     public async Task GetResults_GoodUrl_ReturnsHtml()
     {
-        var results = await SearchResults.GetResultsAsync("https://www.google.co.uk/search?q=land+registry+search&num=100");
+        var p = await PuppeteerBrowser.Create();
+        await p.AcceptGoogleAcceptPage();
+        var results = await p.GetSearchResults(new string[] { "land", "registry", "search"});
         Assert.True(true);
     }
 }
