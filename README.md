@@ -1,4 +1,10 @@
 
+# provisioning
+ensure you have npm installed (i.e. nodejs)
+ensure you have .net 8 runtime
+ensure you have chromium browser installed
+replace the path in launchsettings.json line 32 with the correct absolute path to chromium on your local
+
 # build
     git clone https://github.com/kierenholt/searchScraper.git searchScraperTest
     cd searchScraperTest
