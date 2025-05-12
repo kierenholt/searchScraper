@@ -28,7 +28,8 @@
       "applicationUrl": "http://localhost:5076",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "MOCK_RESULTS": "0"
+        "MOCK_RESULTS": "0",
+        "CHROMIUM": "/usr/bin/chromium-browser"
       }
     },
   }
