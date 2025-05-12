@@ -1,3 +1,6 @@
+using scraper;
+using System.Linq;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -16,29 +19,23 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
+app.MapGet("/api/search/{needle}", async (string needle) =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+    if (Environment.GetEnvironmentVariable("MOCK_RESULTS") == "1")
+    {
+        await Task.Delay(1000);
+        var fakeResults = new string[] { "www.gov.uk", "www.info.co.uk", "www.bbc.co.uk", "www.example.com" };
+        return Enumerable.Range(0, 100).Select(n => fakeResults[n % 4] + (n + 1).ToString());
+    }
+    else
+    {
+        await using var p = new PuppeteerBrowser();
+        await p.Init();
+        await p.AcceptGoogleAcceptPageAsync();
+        return await p.GetSearchResultsAsync(needle);
+    }
 })
-.WithName("GetWeatherForecast")
+.WithName("search")
 .WithOpenApi();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

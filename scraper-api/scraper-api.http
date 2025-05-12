@@ -1,6 +1,6 @@
 @searchScraper_HostAddress = http://localhost:5076
 
-GET {{searchScraper_HostAddress}}/weatherforecast/
+GET {{searchScraper_HostAddress}}/api/
 Accept: application/json
 
 ###

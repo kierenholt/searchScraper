@@ -5,13 +5,16 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "C#: test Debug",
+            "name": "api debug",
+            "type": "dotnet",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}/scraper-api/scraper-api.csproj"
+        },
+        {
+            "name": "test Debug",
             "type": "dotnet",
             "request": "launch",
             "projectPath": "${workspaceFolder}/scraper-test/scraper-test.csproj"
         },
-        {
-
-        }
     ]
 }

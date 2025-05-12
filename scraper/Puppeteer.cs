@@ -4,36 +4,26 @@ using PuppeteerSharp;
 
 namespace scraper;
 
-public class PuppeteerBrowser
+public class PuppeteerBrowser : IAsyncDisposable
 {
-    private readonly IBrowser _browser;
-    private readonly IPage _page;
-
-    private PuppeteerBrowser(IBrowser browser, IPage page)
-    {
-        _browser = browser;
-        _page = page;
-    }
+    private IBrowser? _browser = null;
+    private IPage? _page = null;
 
 
-    public static async Task<PuppeteerBrowser> Create()
+    public async Task Init()
     {
         var extra = new PuppeteerExtra();
         extra.Use(new StealthPlugin());
-        // var browserFetcher = new BrowserFetcher();
-        // await browserFetcher.DownloadAsync();
-        // await using var browser = await Puppeteer.LaunchAsync(
-        //     new LaunchOptions { Headless = true });
 
-        var browser = await extra.LaunchAsync(new LaunchOptions()
+        _browser = await extra.LaunchAsync(new LaunchOptions()
         {
             Headless = false,
             ExecutablePath = "/usr/bin/chromium-browser"
         });
 
-        var page = await browser.NewPageAsync();
-        await page.SetUserAgentAsync(RandomUserAgent.RandomUa.RandomUserAgent);
-        await page.SetViewportAsync(new ViewPortOptions()
+        _page = await _browser.NewPageAsync();
+        await _page.SetUserAgentAsync(RandomUserAgent.RandomUa.RandomUserAgent);
+        await _page.SetViewportAsync(new ViewPortOptions()
         {
             DeviceScaleFactor = 1,
             Width = 1920 + new Random().Next(100),
@@ -41,21 +31,18 @@ public class PuppeteerBrowser
             IsLandscape = false,
             IsMobile = false
         });
-
-        return new PuppeteerBrowser(browser, page);
     }
 
-    public async Task AcceptGoogleAcceptPage()
+    public async Task AcceptGoogleAcceptPageAsync()
     {
         await _page.GoToAsync("https://www.google.com", waitUntil: WaitUntilNavigation.Load);
         await Task.Delay(3000 + new Random().Next(2000));
         await _page.EvaluateExpressionAsync("Array.from(document.querySelectorAll(\"button\")).filter(e => e.textContent == \"Accept all\")[0]?.click()");
     }
 
-    public async Task<string[]> GetSearchResults(string[] searchTerms, int limit = 100)
+    public async Task<string[]> GetSearchResultsAsync(string needle, int limit = 100)
     {
-        //await _page.TypeAsync("")
-        await _page.GoToAsync($"https://www.google.co.uk/search?q={string.Join("+", searchTerms)}&num={limit.ToString()}", waitUntil: WaitUntilNavigation.Load);
+        await _page.GoToAsync($"https://www.google.co.uk/search?q={needle}&num={limit}", waitUntil: WaitUntilNavigation.Load);
         await Task.Delay(1000 + new Random().Next(2000));
         await _page.EvaluateExpressionAsync("Array.from(document.querySelectorAll(\"input[value='Accept all']\"))[1]?.click()");
         await Task.Delay(1000 + new Random().Next(2000));
@@ -66,5 +53,13 @@ public class PuppeteerBrowser
         """;
         var resultsList = await _page.EvaluateExpressionAsync<string[]>(command);
         return resultsList;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _browser.CloseAsync();
+        await _browser.DisposeAsync();
+        _browser = null;
+        _page = null;
     }
 }
